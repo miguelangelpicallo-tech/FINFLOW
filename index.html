@@ -1,1 +1,484 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinFlow — Tu negocio en números</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F5F5F3;color:#1a1a1a;font-size:14px}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:#fff;border-bottom:1px solid #e5e5e3;position:sticky;top:0;z-index:10}
+.logo{font-size:17px;font-weight:500;color:#1a1a1a}
+.logo em{color:#1D9E75;font-style:normal}
+.badge{font-size:11px;background:#E1F5EE;color:#085041;padding:3px 10px;border-radius:20px}
+.main-nav{display:flex;gap:2px;padding:8px 12px;background:#fff;border-bottom:1px solid #e5e5e3;overflow-x:auto;position:sticky;top:49px;z-index:9}
+.mnb{font-size:12px;padding:6px 14px;border-radius:6px;border:none;cursor:pointer;background:transparent;color:#666;white-space:nowrap}
+.mnb.on{background:#f1f1ef;color:#1a1a1a;font-weight:500}
+.sec{display:none;padding:16px;max-width:700px;margin:0 auto}
+.sec.on{display:block}
+.card{background:#fff;border:1px solid #e5e5e3;border-radius:12px;padding:16px;margin-bottom:12px}
+.ct{font-size:13px;font-weight:500;color:#1a1a1a;margin-bottom:3px}
+.hint{font-size:11px;color:#888;margin-bottom:10px;line-height:1.5}
+.tbl{width:100%;border-collapse:collapse;table-layout:fixed}
+.tbl th{font-size:11px;color:#888;font-weight:400;padding:5px 5px;border-bottom:1px solid #e5e5e3;text-align:left}
+.tbl td{padding:4px 3px;border-bottom:1px solid #f1f1ef;vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.ri{width:100%;font-size:12px;padding:5px 6px;border-radius:6px;border:1px solid #e5e5e3;background:#fff;color:#1a1a1a;outline:none}
+.ri:focus{border-color:#1D9E75}
+.ri.num{text-align:right}
+.cat-sel{font-size:11px;padding:4px 5px;border-radius:6px;border:1px solid #e5e5e3;background:#fff;color:#666;width:100%;outline:none}
+.del{font-size:15px;background:none;border:none;cursor:pointer;color:#bbb;padding:0 3px}
+.del:hover{color:#E24B4A}
+.add-btn{font-size:12px;background:none;border:1px dashed #ccc;color:#888;border-radius:6px;padding:6px 14px;cursor:pointer;width:100%;margin-top:7px;transition:background .15s}
+.add-btn:hover{background:#f5f5f3}
+.tot{background:#f5f5f3;border-radius:8px;padding:9px 12px;display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.tot-l{font-size:12px;color:#666}
+.tot-v{font-size:16px;font-weight:500}
+.ok{color:#1D9E75} .danger{color:#E24B4A} .warn{color:#BA7517}
+.pill{font-size:11px;padding:2px 8px;border-radius:20px;display:inline-block}
+.pill.ok{background:#E1F5EE;color:#085041}
+.pill.warn{background:#FAEEDA;color:#633806}
+.pill.danger{background:#FCEBEB;color:#791F1F}
+.mgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.mc{background:#f5f5f3;border-radius:8px;padding:10px}
+.ml{font-size:11px;color:#888;margin-bottom:3px}
+.mv{font-size:18px;font-weight:500;color:#1a1a1a}
+.mix-bar{display:flex;height:7px;border-radius:4px;overflow:hidden;gap:1px;margin:8px 0 5px}
+.mix-leg{display:flex;flex-wrap:wrap;gap:8px;font-size:11px;color:#888}
+.pe-ref{background:#E6F1FB;border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.sl-row{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.sl-lbl{font-size:12px;width:82px;flex-shrink:0}
+.sl-val{font-size:12px;font-weight:500;min-width:48px;text-align:right}
+.sc-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.sc{border-radius:10px;padding:12px}
+.sc.p{background:#FCEBEB} .sc.b{background:#E6F1FB} .sc.o{background:#E1F5EE}
+.sc-l{font-size:11px;font-weight:500;margin-bottom:4px}
+.sc.p .sc-l{color:#791F1F} .sc.b .sc-l{color:#0C447C} .sc.o .sc-l{color:#085041}
+.sc-v{font-size:17px;font-weight:500}
+.sc.p .sc-v{color:#E24B4A} .sc.b .sc-v{color:#185FA5} .sc.o .sc-v{color:#1D9E75}
+.sc-s{font-size:11px;margin-top:2px}
+.sc.p .sc-s{color:#791F1F} .sc.b .sc-s{color:#0C447C} .sc.o .sc-s{color:#085041}
+.pal{padding:10px;margin-bottom:7px;border-left:3px solid}
+.pal.tk{background:#E6F1FB;border-color:#185FA5}
+.pal.co{background:#FAEEDA;border-color:#854F0B}
+.pal.vo{background:#EEEDFE;border-color:#534AB7}
+.pal.mg{background:#E1F5EE;border-color:#0F6E56}
+.pt{font-size:12px;font-weight:500;margin-bottom:2px}
+.pal.tk .pt{color:#0C447C} .pal.co .pt{color:#633806} .pal.vo .pt{color:#3C3489} .pal.mg .pt{color:#085041}
+.pd{font-size:11px;line-height:1.4}
+.pal.tk .pd{color:#185FA5} .pal.co .pd{color:#854F0B} .pal.vo .pd{color:#534AB7} .pal.mg .pd{color:#0F6E56}
+.anual-tbl{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px}
+.anual-tbl th{font-size:11px;color:#888;font-weight:400;padding:6px 6px;border-bottom:1px solid #e5e5e3;text-align:left}
+.anual-tbl td{padding:6px 6px;border-bottom:1px solid #f1f1ef;color:#1a1a1a}
+.anual-tbl tr:last-child td{border-bottom:none}
+.anual-tbl tr.cur{background:#f5f5f3}
+.prog{background:rgba(0,0,0,.08);border-radius:20px;height:7px;margin:8px 0 3px;overflow:hidden}
+.prog-b{height:100%;border-radius:20px}
+.derived{background:#f5f5f3;border-radius:8px;padding:10px 12px;margin-bottom:12px;border:1px solid #e5e5e3}
+.drow{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;border-bottom:1px solid #e5e5e3}
+.drow:last-child{border-bottom:none;font-weight:500}
+.dl{color:#888} .dv{color:#1a1a1a}
+input[type=range]{accent-color:#1D9E75}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">Fin<em>Flow</em></div>
+  <span class="badge">Mi negocio</span>
+</div>
+<div class="main-nav">
+  <button class="mnb on" onclick="go('pe',this)">Mis costos y productos</button>
+  <button class="mnb" onclick="go('mes',this)">Este mes</button>
+  <button class="mnb" onclick="go('anual',this)">Estado del año</button>
+  <button class="mnb" onclick="go('proj',this)">Proyección</button>
+</div>
+
+<!-- 1. PE -->
+<div class="sec on" id="tab-pe">
+  <div class="card">
+    <div class="ct">Costos fijos del mes</div>
+    <div class="hint">Los que pagás aunque no vendas nada: alquiler, sueldos, servicios, cuotas de deuda, impuestos fijos.</div>
+    <table class="tbl"><thead><tr><th style="width:58%">Concepto</th><th>Monto ($)</th><th style="width:24px"></th></tr></thead>
+    <tbody id="cf-body"></tbody></table>
+    <button class="add-btn" onclick="addCF()">+ agregar costo fijo</button>
+    <div class="tot"><span class="tot-l">Total costos fijos / mes</span><span class="tot-v" id="cf-tot">$0</span></div>
+  </div>
+  <div class="card">
+    <div class="ct">Mis productos o servicios</div>
+    <div class="hint">Precio de venta, cuánto te cuesta producirlo o entregarlo, y cuántas unidades vendés por mes. Con eso calculamos todo.</div>
+    <table class="tbl">
+      <thead><tr>
+        <th style="width:26%">Producto / servicio</th>
+        <th style="width:22%">Precio venta ($)</th>
+        <th style="width:26%">Te cuesta producirlo ($)</th>
+        <th style="width:18%">Unidades/mes</th>
+        <th style="width:24px"></th>
+      </tr></thead>
+      <tbody id="prod-body"></tbody>
+    </table>
+    <button class="add-btn" onclick="addProd()">+ agregar producto o servicio</button>
+    <div style="margin-top:12px">
+      <div style="font-size:11px;color:#888;margin-bottom:4px">Peso de cada producto en tus ventas totales</div>
+      <div class="mix-bar" id="mix-bar"></div>
+      <div class="mix-leg" id="mix-leg"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ct">¿Cuánto necesitás vender para cubrir todos tus costos?</div>
+    <div id="pe-out"></div>
+  </div>
+</div>
+
+<!-- 2. MES -->
+<div class="sec" id="tab-mes">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+    <label style="font-size:13px;color:#666">Mes:</label>
+    <select style="font-size:13px;padding:5px 10px;border-radius:8px;border:1px solid #e5e5e3;background:#fff;color:#1a1a1a;outline:none" id="mes-sel" onchange="renderMes()">
+      <option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option>
+      <option selected>Mayo</option><option>Junio</option><option>Julio</option><option>Agosto</option>
+      <option>Septiembre</option><option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
+    </select>
+  </div>
+  <div class="pe-ref">
+    <div>
+      <div style="font-size:12px;color:#0C447C;font-weight:500">Tu punto de equilibrio este mes</div>
+      <div style="font-size:11px;color:#185FA5;margin-top:1px">Necesitás superar este número para estar cubierto</div>
+    </div>
+    <div style="font-size:15px;font-weight:500;color:#185FA5" id="pe-ref-mes">—</div>
+  </div>
+  <div class="card">
+    <div class="ct">Lo que entró este mes</div>
+    <div class="hint">Ventas cobradas, cobros de clientes, cheques acreditados, devoluciones recibidas, etc.</div>
+    <table class="tbl"><thead><tr><th style="width:30%">Categoría</th><th style="width:38%">Detalle</th><th style="width:24%">Monto ($)</th><th style="width:24px"></th></tr></thead>
+    <tbody id="ing-body"></tbody></table>
+    <button class="add-btn" onclick="addMes('ing')">+ agregar ingreso</button>
+    <div class="tot"><span class="tot-l">Total cobrado</span><span class="tot-v ok" id="ing-tot">$0</span></div>
+  </div>
+  <div class="card">
+    <div class="ct">Lo que salió este mes</div>
+    <div class="hint">Compras, sueldos, impuestos, cuotas de deuda, retenciones, percepciones, descuento de cheques, etc.</div>
+    <table class="tbl"><thead><tr><th style="width:30%">Categoría</th><th style="width:38%">Detalle</th><th style="width:24%">Monto ($)</th><th style="width:24px"></th></tr></thead>
+    <tbody id="eg-body"></tbody></table>
+    <button class="add-btn" onclick="addMes('eg')">+ agregar egreso</button>
+    <div class="tot"><span class="tot-l">Total pagado</span><span class="tot-v danger" id="eg-tot">$0</span></div>
+  </div>
+  <div id="res-mes"></div>
+</div>
+
+<!-- 3. ANUAL -->
+<div class="sec" id="tab-anual">
+  <div id="sem-anual"></div>
+  <div class="card">
+    <div class="ct">Mes a mes</div>
+    <div class="hint">Los meses sin datos aparecen vacíos. El PE es el calculado en el primer módulo.</div>
+    <table class="anual-tbl">
+      <thead><tr><th>Mes</th><th>Cobrado</th><th>Pagado</th><th>Resultado</th><th>vs PE</th><th>Acumulado</th></tr></thead>
+      <tbody id="anual-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 4. PROYECCION -->
+<div class="sec" id="tab-proj">
+  <div class="derived" id="derived-box">
+    <div style="font-size:12px;font-weight:500;color:#1a1a1a;margin-bottom:8px">Lo que la app ya sabe de tu negocio</div>
+    <div class="drow"><span class="dl">Ingresos actuales / mes</span><span class="dv" id="d-ing">—</span></div>
+    <div class="drow"><span class="dl">Costos fijos / mes</span><span class="dv" id="d-cf">—</span></div>
+    <div class="drow"><span class="dl">Lo que te cuesta producir / mes</span><span class="dv" id="d-cv">—</span></div>
+    <div class="drow"><span class="dl">Margen de contribución</span><span class="dv" id="d-mc">—</span></div>
+    <div class="drow"><span class="dl">Resultado neto actual / mes</span><span class="dv" id="d-net">—</span></div>
+  </div>
+  <div class="card">
+    <div class="ct">¿Cuánto esperás que suban tus costos fijos cada mes?</div>
+    <div class="hint">Alquiler, sueldos, inflación. Si no sabés, dejalo en 3%. En Argentina entre 3% y 8% es realista.</div>
+    <div class="sl-row" style="margin-bottom:0">
+      <span class="sl-lbl" style="color:#BA7517">Suba de costos</span>
+      <input type="range" id="sl-cf" min="0" max="15" step="1" value="3" style="flex:1" oninput="recalcProj()">
+      <span class="sl-val" style="color:#BA7517" id="out-cf">3%/mes</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ct">¿Cuánto esperás crecer en ventas por mes?</div>
+    <div class="hint">Poné lo que creés realista para cada caso, no lo que querés.</div>
+    <div class="sl-row">
+      <span class="sl-lbl" style="color:#E24B4A">Pesimista</span>
+      <input type="range" id="sl-p" min="-10" max="10" step="1" value="-3" style="flex:1" oninput="recalcProj()">
+      <span class="sl-val" style="color:#E24B4A" id="out-p">-3%</span>
+    </div>
+    <div class="sl-row">
+      <span class="sl-lbl" style="color:#185FA5">Base</span>
+      <input type="range" id="sl-b" min="-5" max="20" step="1" value="5" style="flex:1" oninput="recalcProj()">
+      <span class="sl-val" style="color:#185FA5" id="out-b">+5%</span>
+    </div>
+    <div class="sl-row" style="margin-bottom:0">
+      <span class="sl-lbl" style="color:#1D9E75">Optimista</span>
+      <input type="range" id="sl-o" min="0" max="30" step="1" value="12" style="flex:1" oninput="recalcProj()">
+      <span class="sl-val" style="color:#1D9E75" id="out-o">+12%</span>
+    </div>
+  </div>
+  <div class="sc-grid">
+    <div class="sc p"><div class="sc-l">Pesimista — ganancia anual</div><div class="sc-v" id="rp">—</div><div class="sc-s" id="sp"></div></div>
+    <div class="sc b"><div class="sc-l">Base — ganancia anual</div><div class="sc-v" id="rb">—</div><div class="sc-s" id="sb"></div></div>
+    <div class="sc o"><div class="sc-l">Optimista — ganancia anual</div><div class="sc-v" id="ro">—</div><div class="sc-s" id="so"></div></div>
+  </div>
+  <div class="card">
+    <div class="ct">Los tres escenarios mes a mes</div>
+    <div style="display:flex;gap:12px;margin-bottom:8px;font-size:11px;color:#888">
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:3px;background:#E24B4A;border-radius:2px;display:inline-block"></span>Pesimista</span>
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:2px;border-top:2px dashed #378ADD;display:inline-block"></span>Base</span>
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:3px;background:#1D9E75;border-radius:2px;display:inline-block"></span>Optimista</span>
+    </div>
+    <div style="position:relative;height:220px;width:100%">
+      <canvas id="proj-c"></canvas>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ct">Para llegar al escenario optimista</div>
+    <div id="pals"></div>
+  </div>
+</div>
+
+<script>
+const COLS=['#378ADD','#1D9E75','#E24B4A','#BA7517','#534AB7'];
+const MES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const ING_C=['Ventas del mes','Cobro de clientes','Cheques acreditados','Descuento de cheques cobrado','Devoluciones recibidas','Otros ingresos'];
+const EG_C=['Compras de mercadería','Sueldos y cargas sociales','Alquiler','Servicios (luz, gas, internet)','Cuota de deuda — banco','Cuota de deuda — proveedor','Cuota de deuda — otra fuente','Retenciones sufridas','Percepciones sufridas','IVA / impuestos','Honorarios','Logística y envíos','Publicidad','Gastos varios'];
+
+let cfRows=[{n:'Alquiler',v:80000},{n:'Sueldos',v:150000},{n:'Servicios',v:20000}];
+let pRows=[{n:'Producto A',pv:5000,cv:1800,u:40},{n:'Servicio B',pv:12000,cv:2000,u:15}];
+let ingRows=[{c:'Ventas del mes',d:'Ventas mostrador',v:280000},{c:'Cobro de clientes',d:'Cliente Martínez',v:45000},{c:'Cheques acreditados',d:'Cheque vto 10/05',v:30000}];
+let egRows=[{c:'Compras de mercadería',d:'Proveedor principal',v:120000},{c:'Sueldos y cargas sociales',d:'Personal',v:90000},{c:'Cuota de deuda — banco',d:'Préstamo Banco Nación',v:22000},{c:'Alquiler',d:'Local comercial',v:38000},{c:'Retenciones sufridas',d:'Ret. IIBB cliente A',v:8000},{c:'Percepciones sufridas',d:'Perc. factura proveedor',v:4000}];
+const histData={Enero:{i:210000,e:195000},Febrero:{i:230000,e:198000},Marzo:{i:310000,e:220000},Abril:{i:180000,e:230000}};
+
+function fmt(n){return '$'+Math.round(Math.abs(n)).toLocaleString('es-AR')}
+function fmts(n){return(n<0?'-':'')+fmt(n)}
+
+function go(id,btn){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.mnb').forEach(b=>b.classList.remove('on'));
+  document.getElementById('tab-'+id).classList.add('on');
+  btn.classList.add('on');
+  if(id==='pe')renderPE();
+  if(id==='mes'){syncPE();renderMes();}
+  if(id==='anual'){syncPE();renderAnual();}
+  if(id==='proj'){renderPE();recalcProj();}
+}
+
+function calcT(){
+  const CF=cfRows.reduce((s,r)=>s+r.v,0);
+  const tI=pRows.reduce((s,r)=>s+r.pv*r.u,0);
+  const tCV=pRows.reduce((s,r)=>s+r.cv*r.u,0);
+  const tMC=tI-tCV,net=tMC-CF,mp=tI>0?tMC/tI:0,pe=mp>0?CF/mp:0;
+  return{CF,tI,tCV,tMC,net,mp,pe};
+}
+
+function renderCF(){
+  const tb=document.getElementById('cf-body');tb.innerHTML='';
+  cfRows.forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><input class="ri" value="${r.n}" oninput="cfRows[${i}].n=this.value"></td>
+      <td><input class="ri num" type="number" value="${r.v}" oninput="cfRows[${i}].v=parseFloat(this.value)||0;renderPE()"></td>
+      <td><button class="del" onclick="cfRows.splice(${i},1);renderPE()">×</button></td>`;
+    tb.appendChild(tr);
+  });
+  document.getElementById('cf-tot').textContent=fmt(cfRows.reduce((s,r)=>s+r.v,0));
+}
+
+function renderProds(){
+  const tb=document.getElementById('prod-body');tb.innerHTML='';
+  pRows.forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><input class="ri" value="${r.n}" oninput="pRows[${i}].n=this.value;renderPE()"></td>
+      <td><input class="ri num" type="number" value="${r.pv}" oninput="pRows[${i}].pv=parseFloat(this.value)||0;renderPE()"></td>
+      <td><input class="ri num" type="number" value="${r.cv}" oninput="pRows[${i}].cv=parseFloat(this.value)||0;renderPE()"></td>
+      <td><input class="ri num" type="number" value="${r.u}" oninput="pRows[${i}].u=parseFloat(this.value)||0;renderPE()"></td>
+      <td><button class="del" onclick="pRows.splice(${i},1);renderPE()">×</button></td>`;
+    tb.appendChild(tr);
+  });
+}
+
+function renderMix(tI){
+  const bar=document.getElementById('mix-bar'),leg=document.getElementById('mix-leg');
+  bar.innerHTML='';leg.innerHTML='';
+  if(!tI)return;
+  pRows.forEach((r,i)=>{
+    const p=Math.round(r.pv*r.u/tI*100);if(!p)return;
+    const col=COLS[i%COLS.length],s=document.createElement('div');
+    s.style.cssText=`flex:${p};height:100%;background:${col};border-radius:3px`;
+    bar.appendChild(s);
+    leg.innerHTML+=`<span><span style="width:8px;height:8px;border-radius:2px;background:${col};display:inline-block;margin-right:3px;vertical-align:middle"></span>${r.n}: ${p}%</span>`;
+  });
+}
+
+function renderPEResult(t){
+  if(!pRows.length||!t.CF){document.getElementById('pe-out').innerHTML='<p style="font-size:12px;color:#888;padding:8px 0">Completá tus datos para ver el resultado.</p>';return;}
+  const isO=t.net>=0,isS=t.tI>=t.pe;
+  const bg=isS&&isO?'#E1F5EE':!isS?'#FCEBEB':'#FAEEDA';
+  const tc=isS&&isO?'#085041':!isS?'#791F1F':'#633806';
+  const vc=isS&&isO?'#1D9E75':!isS?'#E24B4A':'#BA7517';
+  let h=`<div style="background:${bg};border-radius:8px;padding:14px;margin-bottom:10px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <div><div style="font-size:13px;font-weight:500;color:${tc}">Necesitás facturar al menos</div>
+      <div style="font-size:11px;color:${tc};margin-top:2px">Facturación actual: ${fmt(t.tI)} — ${t.net>=0?'te sobra':'te falta'}: ${fmts(t.net)}</div></div>
+      <div style="font-size:22px;font-weight:500;color:${vc}">${fmt(t.pe)}/mes</div>
+    </div></div>`;
+  h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px">';
+  pRows.forEach((r,i)=>{
+    const mc=r.pv-r.cv,mp2=r.pv>0?Math.round(mc/r.pv*100):0,col=COLS[i%COLS.length];
+    h+=`<div style="background:#f5f5f3;padding:9px;border-left:3px solid ${col}">
+      <div style="font-size:11px;color:#888;margin-bottom:2px">${r.n}</div>
+      <div style="font-size:12px;font-weight:500;color:#1a1a1a">${Math.round(r.u)} u. × ${fmt(r.pv)}</div>
+      <div style="font-size:11px;color:#888;margin-top:1px">Ganás ${fmt(mc)}/u (${mp2}%)</div></div>`;
+  });
+  h+='</div>';
+  document.getElementById('pe-out').innerHTML=h;
+}
+
+function renderPE(){renderCF();renderProds();const t=calcT();renderMix(t.tI);renderPEResult(t);}
+function addCF(){cfRows.push({n:'Nuevo costo',v:0});renderPE();}
+function addProd(){pRows.push({n:'Nuevo producto',pv:0,cv:0,u:0});renderPE();}
+function syncPE(){const t=calcT();document.getElementById('pe-ref-mes').textContent=fmt(t.pe);}
+
+function renderMesRows(type){
+  const rows=type==='ing'?ingRows:egRows;
+  const cats=type==='ing'?ING_C:EG_C;
+  const tb=document.getElementById(type+'-body');tb.innerHTML='';
+  rows.forEach((r,i)=>{
+    const opts=cats.map(c=>`<option${c===r.c?' selected':''}>${c}</option>`).join('');
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><select class="cat-sel" onchange="${type}Rows[${i}].c=this.value">${opts}</select></td>
+      <td><input class="ri" value="${r.d||''}" placeholder="Descripción" oninput="${type}Rows[${i}].d=this.value"></td>
+      <td><input class="ri num" type="number" value="${r.v}" oninput="${type}Rows[${i}].v=parseFloat(this.value)||0;renderMes()"></td>
+      <td><button class="del" onclick="${type}Rows.splice(${i},1);renderMes()">×</button></td>`;
+    tb.appendChild(tr);
+  });
+  const tot=rows.reduce((s,r)=>s+(r.v||0),0);
+  document.getElementById(type+'-tot').textContent=fmt(tot);
+  return tot;
+}
+
+function addMes(t){
+  if(t==='ing')ingRows.push({c:'Ventas del mes',d:'',v:0});
+  else egRows.push({c:'Gastos varios',d:'',v:0});
+  renderMes();
+}
+
+function renderMes(){
+  const t=calcT(),ing=renderMesRows('ing'),eg=renderMesRows('eg');
+  const net=ing-eg,pe=t.pe,isS=ing>=pe,isP=net>=0;
+  const bg=isS&&isP?'#E1F5EE':!isS?'#FCEBEB':'#FAEEDA';
+  const tc=isS&&isP?'#085041':!isS?'#791F1F':'#633806';
+  const vc=isS&&isP?'#1D9E75':!isS?'#E24B4A':'#BA7517';
+  const pct=pe>0?Math.min(100,Math.round(ing/pe*100)):0;
+  const msg=isS&&isP?'Superaste el punto de equilibrio':!isS?'No llegaste al punto de equilibrio':'Superaste el PE pero el resultado es negativo — revisá tus pagos';
+  document.getElementById('res-mes').innerHTML=`
+    <div style="background:${bg};border-radius:10px;padding:14px;margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div><div style="font-size:13px;font-weight:500;color:${tc};margin-bottom:2px">${msg}</div>
+        <div style="font-size:11px;color:${tc}">Cobraste ${fmt(ing)} de ${fmt(pe)} necesarios (${pct}%)</div></div>
+        <div style="text-align:right"><div style="font-size:20px;font-weight:500;color:${vc}">${fmts(net)}</div>
+        <div style="font-size:11px;color:${tc};margin-top:1px">resultado del mes</div></div>
+      </div>
+      <div class="prog"><div class="prog-b" style="width:${pct}%;background:${vc}"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:${tc}"><span>$0</span><span>PE: ${fmt(pe)}</span></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+      <div class="mc"><div class="ml">Total cobrado</div><div class="mv ok">${fmt(ing)}</div></div>
+      <div class="mc"><div class="ml">Total pagado</div><div class="mv danger">${fmt(eg)}</div></div>
+      <div class="mc"><div class="ml">Te ${net>=0?'sobró':'faltó'}</div><div class="mv ${net>=0?'ok':'danger'}">${fmts(net)}</div></div>
+    </div>`;
+}
+
+function renderAnual(){
+  const t=calcT(),mesIdx=document.getElementById('mes-sel').selectedIndex;
+  const iA=ingRows.reduce((s,r)=>s+(r.v||0),0),eA=egRows.reduce((s,r)=>s+(r.v||0),0);
+  const data={...histData};data[MESES[mesIdx]]={i:iA,e:eA};
+  let acum=0,tI=0,tE=0,mOk=0;
+  MESES.forEach(m=>{if(data[m]){tI+=data[m].i;tE+=data[m].e;if(data[m].i-data[m].e>=0)mOk++;}});
+  const tN=tI-tE,mc=Object.keys(data).length;
+  const sem=tN>tI*0.08?{bg:'#E1F5EE',tc:'#085041',vc:'#1D9E75',ico:'▲',txt:'Vas ganando'}
+    :tN>=0?{bg:'#FAEEDA',tc:'#633806',vc:'#BA7517',ico:'▶',txt:'Estás en equilibrio'}
+    :{bg:'#FCEBEB',tc:'#791F1F',vc:'#E24B4A',ico:'▼',txt:'Vas perdiendo'};
+  document.getElementById('sem-anual').innerHTML=`
+    <div style="background:${sem.bg};border-radius:10px;padding:14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
+      <div><div style="font-size:18px;font-weight:500;color:${sem.tc};margin-bottom:3px">${sem.ico} ${sem.txt}</div>
+      <div style="font-size:12px;color:${sem.tc}">${mc} meses cargados — cobrado ${fmt(tI)} — pagado ${fmt(tE)}</div>
+      <div style="font-size:12px;color:${sem.tc};margin-top:1px">Meses positivos: ${mOk} de ${mc}</div></div>
+      <div style="text-align:right"><div style="font-size:24px;font-weight:500;color:${sem.vc}">${fmts(tN)}</div>
+      <div style="font-size:11px;color:${sem.tc};margin-top:1px">resultado acumulado</div></div>
+    </div>`;
+  let rows='';
+  MESES.forEach((m,i)=>{
+    const d=data[m],isCur=i===mesIdx;
+    if(!d){rows+=`<tr><td style="color:#888">${m}</td><td colspan="5" style="font-size:11px;color:#bbb">sin datos</td></tr>`;return;}
+    const net=d.i-d.e;acum+=net;
+    const isS2=d.i>=t.pe,isP=net>=0;
+    const est=isS2&&isP?'ok':!isS2?'danger':'warn';
+    const etx=isS2&&isP?'OK':!isS2?'Debajo PE':'Revisar';
+    rows+=`<tr${isCur?' class="cur"':''}><td style="font-weight:${isCur?500:400}">${m}</td>
+      <td class="ok">${fmt(d.i)}</td><td class="danger">${fmt(d.e)}</td>
+      <td class="${isP?'ok':'danger'}">${fmts(net)}</td>
+      <td><span class="pill ${est}">${etx}</span></td>
+      <td class="${acum>=0?'ok':'danger'}">${fmts(acum)}</td></tr>`;
+  });
+  document.getElementById('anual-body').innerHTML=rows;
+}
+
+let pjChart=null;
+function proy(t,cfG,g){
+  let ing=t.tI,cf=t.CF,cvR=t.tI>0?t.tCV/t.tI:0;
+  return MES.map((_,i)=>{
+    if(i>0){ing*=(1+g/100);cf*=(1+cfG/100);}
+    return Math.round(ing-cf-ing*cvR);
+  });
+}
+
+function recalcProj(){
+  const t=calcT();
+  document.getElementById('d-ing').textContent=fmt(t.tI);
+  document.getElementById('d-cf').textContent=fmt(t.CF);
+  document.getElementById('d-cv').textContent=fmt(t.tCV);
+  document.getElementById('d-mc').textContent=fmt(t.tMC)+' ('+Math.round(t.mp*100)+'%)';
+  const ne=document.getElementById('d-net');ne.textContent=fmts(t.net);ne.style.color=t.net>=0?'#1D9E75':'#E24B4A';
+  const cfG=parseFloat(document.getElementById('sl-cf').value)||0;
+  const gp=parseFloat(document.getElementById('sl-p').value)||0;
+  const gb=parseFloat(document.getElementById('sl-b').value)||0;
+  const go2=parseFloat(document.getElementById('sl-o').value)||0;
+  document.getElementById('out-cf').textContent=cfG+'%/mes';
+  document.getElementById('out-p').textContent=(gp>=0?'+':'')+gp+'%';
+  document.getElementById('out-b').textContent=(gb>=0?'+':'')+gb+'%';
+  document.getElementById('out-o').textContent=(go2>=0?'+':'')+go2+'%';
+  const dP=proy(t,cfG,gp),dB=proy(t,cfG,gb),dO=proy(t,cfG,go2);
+  const sP=dP.reduce((s,v)=>s+v,0),sB=dB.reduce((s,v)=>s+v,0),sO=dO.reduce((s,v)=>s+v,0);
+  document.getElementById('rp').textContent=fmts(sP);document.getElementById('rb').textContent=fmts(sB);document.getElementById('ro').textContent=fmts(sO);
+  document.getElementById('sp').textContent='Mes 12: '+fmts(dP[11])+'/mes';
+  document.getElementById('sb').textContent='Mes 12: '+fmts(dB[11])+'/mes';
+  document.getElementById('so').textContent='Mes 12: '+fmts(dO[11])+'/mes';
+  if(pjChart){pjChart.destroy();pjChart=null;}
+  pjChart=new Chart(document.getElementById('proj-c'),{type:'line',
+    data:{labels:MES,datasets:[
+      {label:'Pesimista',data:dP,borderColor:'#E24B4A',borderWidth:2,pointRadius:3,pointBackgroundColor:'#E24B4A',fill:false,tension:.3},
+      {label:'Base',data:dB,borderColor:'#378ADD',borderWidth:2,pointRadius:3,pointBackgroundColor:'#378ADD',fill:false,tension:.3,borderDash:[6,4]},
+      {label:'Optimista',data:dO,borderColor:'#1D9E75',borderWidth:2,pointRadius:3,pointBackgroundColor:'#1D9E75',fill:false,tension:.3}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{autoSkip:false,maxRotation:0,font:{size:10}},grid:{color:'rgba(0,0,0,.04)'}},
+              y:{ticks:{callback:v=>(v<0?'-':'')+'$'+Math.abs(Math.round(v/1000))+'k',font:{size:10}},grid:{color:'rgba(0,0,0,.04)'}}}}});
+  const gap=Math.round(sO-sB),gapM=Math.round(gap/12);
+  const units=pRows.reduce((s,r)=>s+r.u,0),tNeed=units>0?Math.round(gapM/units):0,vNeed=t.tI>0?Math.round(gapM/t.tI*100):0;
+  document.getElementById('pals').innerHTML=`
+    <p style="font-size:12px;color:#888;margin-bottom:10px">La brecha entre base y optimista es <strong style="color:#1a1a1a">${fmt(gap)}</strong> anuales (${fmt(gapM)}/mes).</p>
+    <div class="pal tk"><div class="pt">Subir el precio de venta</div><div class="pd">Si cada venta promedia ${fmt(tNeed)} más, lográs la misma diferencia sin vender más unidades.</div></div>
+    <div class="pal co"><div class="pt">Bajar lo que te cuesta producir o entregar</div><div class="pd">Negociar con proveedores o mejorar procesos libera margen sin tocar precios ni volumen.</div></div>
+    <div class="pal vo"><div class="pt">Vender más unidades</div><div class="pd">Aumentar el volumen ~${vNeed}% mensual sostenido genera el mismo resultado.</div></div>
+    <div class="pal mg"><div class="pt">Priorizar los productos que más margen dejan</div><div class="pd">No hace falta vender más en total, sino vender mejor — enfocate en lo que más te conviene.</div></div>`;
+}
+
+renderPE();
+</script>
+</body>
+</html>
 
